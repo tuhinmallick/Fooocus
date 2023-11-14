@@ -36,12 +36,12 @@ def generate_clicked(*args):
 
     while not finished:
         time.sleep(0.01)
-        if len(worker.outputs) > 0:
+        if worker.outputs:
             flag, product = worker.outputs.pop(0)
             if flag == 'preview':
 
                 # help bad internet connection by skipping duplicated preview
-                if len(worker.outputs) > 0:  # if we have the next item
+                if worker.outputs:  # if we have the next item
                     if worker.outputs[0][0] == 'preview':   # if the next item is also a preview
                         # print('Skipped one preview for better internet connection.')
                         continue
@@ -206,16 +206,14 @@ with shared.gradio_root:
                     return gr.update(visible=not r)
 
                 def refresh_seed(r, seed_string):
-                    if r:
-                        return random.randint(constants.MIN_SEED, constants.MAX_SEED)
-                    else:
+                    if not r:
                         try:
                             seed_value = int(seed_string)
                             if constants.MIN_SEED <= seed_value <= constants.MAX_SEED:
                                 return seed_value
                         except ValueError:
                             pass
-                        return random.randint(constants.MIN_SEED, constants.MAX_SEED)
+                    return random.randint(constants.MIN_SEED, constants.MAX_SEED)
 
                 seed_random.change(random_checked, inputs=[seed_random], outputs=[image_seed], queue=False)
 
@@ -357,7 +355,7 @@ with shared.gradio_root:
                     modules.config.update_all_model_names()
                     results = []
                     results += [gr.update(choices=modules.config.model_filenames), gr.update(choices=['None'] + modules.config.model_filenames)]
-                    for i in range(5):
+                    for _ in range(5):
                         results += [gr.update(choices=['None'] + modules.config.lora_filenames), gr.update()]
                     return results
 
